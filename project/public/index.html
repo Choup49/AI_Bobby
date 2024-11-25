@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Game Training</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #controls {
+            margin: 20px 0;
+        }
+        #stats {
+            margin-top: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button id="startTraining">Start Training</button>
+    </div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div id="stats">
+        <p>Episode: <span id="episode">0</span></p>
+        <p>Total Reward: <span id="reward">0</span></p>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const socket = io();
+
+        document.getElementById('startTraining').addEventListener('click', () => {
+            socket.emit('start_training');
+        });
+
+        function drawGame(state) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(state.player.x - 15, state.player.y - 15, 30, 30);
+
+            // Draw goal
+            ctx.fillStyle = 'green';
+            ctx.fillRect(state.goal.x - 15, state.goal.y - 15, 30, 30);
+
+            // Draw obstacles
+            ctx.fillStyle = 'red';
+            state.obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x - 15, obstacle.y - 15, 30, 30);
+            });
+
+            // Update stats
+            document.getElementById('episode').textContent = state.episode;
+            document.getElementById('reward').textContent = state.reward.toFixed(2);
+        }
+
+        socket.on('game_state', (state) => {
+            drawGame(state);
+        });
+    </script>
+</body>
+</html>
